@@ -5,25 +5,25 @@ import pygame
 pygame.init() 
 
 ## constante
-FRAME_RATE = 30
+FPS = 30
 
 class PacmanArena(Arena):
 
     ## instancia e define valor
     def __init__(self, width: int, height: int):
         self._w, self._h = width, height
-        self._lifes = 2 # Vidas; você perde em -1
-        self._actors = []
+        self._vidas = 2 # Vidas; você perde em -1
+        self._atores = []
         ## inicializa personagens
-        for x, y, w, h in walls_pos: Wall(self, x, y, w, h)
-        for x, y in cookies_pos: Cookie(self, x, y)
-        for x, y in powers_pos: Power(self, x, y)
-        Ghost(self, 108, 88, 0)
-        Ghost(self, 108, 112, 1)
-        Ghost(self, 124, 112, 2)
-        Ghost(self, 92, 112, 3)
+        for x, y, w, h in posicaoParedes: Parede(self, x, y, w, h)
+        for x, y in posicaoBiscoitos: Biscoito(self, x, y)
+        for x, y in posicaoPoderes: Poder(self, x, y)
+        Fantasma(self, 108, 88, 0)
+        Fantasma(self, 108, 112, 1)
+        Fantasma(self, 124, 112, 2)
+        Fantasma(self, 92, 112, 3)
         Bonus(self)
-        Gate(self)
+        Portao(self)
         ## adiciona sons num vetor de sons
         self._sounds = [pygame.mixer.Sound('sound/OpeningSong.wav'),
                         pygame.mixer.Sound('sound/Dies.wav'),
@@ -34,14 +34,14 @@ class PacmanArena(Arena):
                         pygame.mixer.Sound('sound/ExtraLive.wav')]
         self.sound(0).play()
 
-    def playing(self) -> bool:
+    def isJogando(self) -> bool:
         result = 1
         ## condição de vitória
-        for a in self._actors:
-            if isinstance(a, Cookie) or isinstance(a, Power):
+        for a in self._atores:
+            if isinstance(a, Biscoito) or isinstance(a, Poder):
                 result = 0
         ## condição de derrota
-        if self._lifes == -1: result = 2
+        if self._vidas == -1: result = 2
         return result # 0 -> continua a jogar, 1 -> você ganhou, 2 -> você perdeu
 
     ## retorna som de acordo com o paremetro
@@ -153,7 +153,7 @@ class Biscoito(Ator):
     def simbolo(self):
         return 166, 54
     
-    ## colisão cookie
+    ## colisão Biscoito
     def collide(self, other):
         if isinstance(other, PacMan):
             x, y, w, h = other.rect()
@@ -209,7 +209,7 @@ class Fantasma(Ator):
         self._arena.adicionar(self)
         self._behav = random.randint(0, 1)
         self._behav_count = random.randint(0, 50)
-        self._gate = False # Quando True, o fantasma pode passar pelo portão
+        self._Portao = False # Quando True, o fantasma pode passar pelo portão
 
     def getStatus(self) -> int:
         return self._status
@@ -222,8 +222,8 @@ class Fantasma(Ator):
         ## -1 -> inicialização
         ## 0 -> normal
         ## 1 -> Pac-Man perde vida
-        ## 2 -> Power Pac-Man
-        ## 3 -> Power Pac-Man em conclusão
+        ## 2 -> Poder Pac-Man
+        ## 3 -> Poder Pac-Man em conclusão
         ## 4 -> comido por Pac-Man durante 2/3 do estado
         if status == -1: self.pos_init()
         elif status == 0:
@@ -236,17 +236,17 @@ class Fantasma(Ator):
         self._counter = 0
 
     def pos_init(self): # A posição do fantasma é redefinida para sua posição inicial
-        self._x, self._y = self._start_x, self._start_y
+        self._x, self._y = self._comecar_x, self._comecar_y
         self._sprite = [64, 64 + self._color*16]
 
-    def start(self): # O fantasma começa a se mover
-        self._speed = 2
+    def comecar(self): # O fantasma começa a se mover
+        self._velocidade = 2
         self._dir = [0, -2]
         self._sprite = [64, 64 + self._color*16]
 
     def normal(self): # O fantasma retorna à velocidade normal
-        self._speed = 2
-        if self._y == 112 and 92 <= self._x <= 128: self._gate = True # Se ele estiver dentro do recinto inicial, ele deve ser capaz de sair
+        self._velocidade = 2
+        if self._y == 112 and 92 <= self._x <= 128: self._Portao = True # Se ele estiver dentro do recinto inicial, ele deve ser capaz de sair
         if (self._dir[0] != 0 and self._x % 2 == 0) or (self._dir[1] != 0 and self._y % 2 == 0):
             self._dir = [self._dir[0]*2, self._dir[1]*2]
         else:
@@ -255,19 +255,19 @@ class Fantasma(Ator):
             self._dir = [self._dir[0]*2, self._dir[1]*2]
         self._sprite = [0, 64 + self._color*16]
 
-    def stop(self): # O fantasma para
-        self._speed = 0
+    def comecar(self): # O fantasma para
+        self._velocidade = 0
         self._dir = [0, 0]
 
-    def runaway(self): # O fantasma reverte, fica azul e fica mais lento
-        self._speed = 1
+    def fugir(self): # O fantasma reverte, fica azul e fica mais lento
+        self._velocidade = 1
         if self._dir[0] != 0: self._dir[0] = -self._dir[0]/abs(self._dir[0])
         else: self._dir[1] = -self._dir[1]/abs(self._dir[1])
         self._sprite = [144, 64]
 
-    def eaten(self): # O fantasma se torna os "olhinhos" e aumenta sua velocidade
-        self._speed = 4
-        self._gate = True
+    def comido(self): # O fantasma se torna os "olhinhos" e aumenta sua velocidade
+        self._velocidade = 4
+        self._Portao = True
         if (self._dir[0] != 0 and self._x % 4 == 0) or (self._dir[1] != 0 and self._y % 4 == 0):
             self._dir = [self._dir[0]*4, self._dir[1]*4]
         else:
@@ -280,8 +280,8 @@ class Fantasma(Ator):
         Arena_W, Arena_H = self._arena.size()
         angles = ((0,0),(232,0),(0,232),(232,232))
         ## Controle dos limites da arena
-        if self._x < self._speed - self.W: self._x = Arena_W - self._speed
-        elif self._x > Arena_W - self._speed: self._x = self._speed - self.W
+        if self._x < self._velocidade - self.W: self._x = Arena_W - self._velocidade
+        elif self._x > Arena_W - self._velocidade: self._x = self._velocidade - self.W
         ## Criação da lista de apenas direções possíveis
         dirs = []
         if not self._arena.indoParaParede(self, self._dir[0], self._dir[1]): dirs.append(self._dir)
@@ -298,24 +298,24 @@ class Fantasma(Ator):
         elif self._status in [2, 3]: self._dir = random.choice(dirs)
         else:
             ## Seleção de alvo (xt, yt)
-            if self._gate and self._status != 4: # O fantasma sai do recinto inicial para entrar no jogo
+            if self._Portao and self._status != 4: # O fantasma sai do recinto inicial para entrar no jogo
                 xt, yt = 108, 88
                 if self._x == xt and self._y == yt:
                     self.status(0)
-                    self._gate = False
+                    self._Portao = False
             elif self._status == 4: # O fantasma retorna ao recinto inicial quando comido por PacMan
                 xt,yt = 108, 112
                 if self._x == xt and self._y == yt:
                     self.status(0)
-                    self._gate = True
+                    self._Portao = True
             elif self._behav == 0: # Modo de dispersão (patrulha de canto)
                 xt,yt = angles[self._color]
-                if self._behav_count == FRAME_RATE*7:
+                if self._behav_count == FPS*7:
                     self._behav_count = 0
                     self._behav = 1
                 else: self._behav_count += 1
             elif self._behav == 1: # Modo de perseguição (perseguição Pac-Man)
-                for a in self._arena.actors():
+                for a in self._arena.atores():
                     if isinstance(a, PacMan):
                         xt, yt, w, h = a.rect()
                 if self._behav_count == FPS*7:
@@ -410,12 +410,12 @@ class PacMan(Ator):
         self._x, self._y = x, y
         self.status(-1)
         self._arena = arena
-        self._arena.add(self)
-        self.scores = 0 # Ponto
-        self.scores_sprite = []
+        self._arena.adicionar(self)
+        self.pontuacao = 0 # Ponto
+        self.pontuacao_sprite = []
         self.bonus_sprite = []
         self._bonus = [100, 300, 500, 700, 1000, 2000, 3000, 5000] #valor do bonus
-        self._gate = False
+        self._Portao = False
 
     def direcao(self, next_dx:int, next_dy:int):
         self._next_dir = (next_dx, next_dy)
@@ -441,13 +441,13 @@ class PacMan(Ator):
         self._x, self._y = 108, 184
         self._sprite = (16, 16)
 
-    def start(self): # PacMan começa a se mover
+    def comecar(self): # PacMan começa a se mover
         self.pos_init()
         self._dir = (-2, 0)
         self._next_dir = (-2, 0)
 
-    def stop(self): # PacMan para
-        self._arena.sound(3).stop()
+    def parar(self): # PacMan para
+        self._arena.sound(3).parar()
         self._dir = (0,0)
         self._next_dir = (0,0)
         self._sprite = (16, self._sprite[1])
@@ -471,7 +471,7 @@ class PacMan(Ator):
                     ## Cálculo de pontos de bônus
                     num = 0 # Número de fantasmas já comidos
                     for a in self._arena.actors():
-                        if isinstance(a, Ghost) and a.getStatus() in [0,4]: num += 1
+                        if isinstance(a, Fantasma) and a.getStatus() in [0,4]: num += 1
                     if other.getStatus() == 3: num += 1
                     score = 100 * (2**(num + 1))
                     self.pontuacao_sprite.append([(x, y), num, 0])
@@ -493,7 +493,7 @@ class PacMan(Ator):
             if self._x < 2 - self.W: self._x = Arena_W - 2
             elif self._x > Arena_W - 2: self._x = 2 - self.W
             ## Substituindo dir por next_dir se possível
-            if self._dir != self._next_dir and not self._arena.going_to_wall(self, self._next_dir[0], self._next_dir[1]):
+            if self._dir != self._next_dir and not self._arena.going_to_Parede(self, self._next_dir[0], self._next_dir[1]):
                 self._dir = self._next_dir
             self._x += self._dir[0]
             self._y += self._dir[1]

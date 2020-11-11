@@ -1,4 +1,4 @@
-class Actor(object):
+class Ator(object):
 
     def rect(self) -> tuple:
         return self._x, self._y, self.W, self.H
@@ -35,26 +35,26 @@ class Arena(object):
     def tamanho(self) -> tuple:
         return (self._w, self._h)
 
-    def getLifes(self) -> int:
-        return self._lifes
+    def getVidas(self) -> int:
+        return self._vidas
 
 
     def adicionar(self, a):
         if a not in self._atores: self._atores.append(a)
 
     def remover(self, a):
-        if a in self._atores: self._atores.remover(a)
+        if a in self._atores: self._atores.remove(a)
 
     def perderVida(self):
-        self._lifes -= 1
+        self._vidas -= 1
 
 
     
     def moverTodos(self):
         for a in self.atores():
-            previous_pos = a.rect()
+            ultimaPosicao = a.rect()
             a.mover()
-            if a.rect() != previous_pos:
+            if a.rect() != ultimaPosicao:
                 for other in reversed(self.atores()):
                     if other is not a and self.checarColisao(a, other):
                         a.colidir(other)

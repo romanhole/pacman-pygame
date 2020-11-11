@@ -8,22 +8,22 @@ from pygame.locals import (KEYDOWN, K_RIGHT, K_d, K_LEFT, K_a, K_UP, K_w, K_DOWN
 
 ## constantes
 FPS = 30
-larguraTela, altura = 232, 272
+larguraTela, alturaTela = 232, 272
 
 ## inicializacao da arena e dos personagens
-arena = PacmanArena(larguraTela, altura)
+arena = PacmanArena(larguraTela, alturaTela)
 
 ## inicializacao do PacMan
 pacman = PacMan(arena, 108, 184)
 
 pygame.init()
 clock = pygame.time.Clock()
-tela = pygame.display.set_mode(arena.size())
+tela = pygame.display.set_mode(arena.tamanho())
 imgFundo = pygame.image.load('pacman_background.png')
 sprites = pygame.image.load('pacman_sprites.png')
 
 isJogando = True
-pacman.direction(-2, 0)
+pacman.direcao(-2, 0)
 while isJogando:
     tela.fill((0, 0, 0))
     tela.blit(imgFundo, (0, 0))
@@ -34,31 +34,31 @@ while isJogando:
             isJogando = False
             esc = True
         elif evento.type == pygame.KEYDOWN:
-            if evento.key in (K_RIGHT, K_d): pacman.direction(2, 0)
-            elif evento.key in (K_LEFT, K_a): pacman.direction(-2, 0)
-            elif evento.key in (K_UP, K_w): pacman.direction(0, -2)
-            elif evento.key in (K_DOWN, K_s): pacman.direction(0, 2)
+            if evento.key in (K_RIGHT, K_d): pacman.direcao(2, 0)
+            elif evento.key in (K_LEFT, K_a): pacman.direcao(-2, 0)
+            elif evento.key in (K_UP, K_w): pacman.direcao(0, -2)
+            elif evento.key in (K_DOWN, K_s): pacman.direcao(0, 2)
             if evento.key == pygame.K_ESCAPE:
                 isJogando = False
                 esc = True
-    arena.move_all()
+    arena.moverTodos()
 
     ## Exibe o vídeo dos personagens
-    for a in arena.actors():
+    for a in arena.atores():
         if not isinstance(a, Parede) and not isinstance(a, Portao):
             x, y, w, h = a.rect()
-            xs, ys = a.symbol()
+            xs, ys = a.simbolo()
             tela.blit(sprites, (x, y), area = (xs, ys, w, h))
 
     ## Exibe o vídeo dos pontos
     font = pygame.font.SysFont('Courier', 14)
-    msg = font.render(str(pacman.scores), True, (255, 255, 255))
+    msg = font.render(str(pacman.pontuacao), True, (255, 255, 255))
     tela.blit(msg, (6, 254))
 
     ## Ponto dos fantasmas comidos
-    for s in reversed(pacman.scores_sprite):
+    for s in reversed(pacman.pontuacao_sprite):
         tela.blit(sprites, s[0], area = (s[1]*16, 128, 16, 16))
-        if s[2] == FPS*3: pacman.scores_sprite.remove(s)
+        if s[2] == FPS*3: pacman.pontuacao_sprite.remove(s)
         else: s[2] += 1
 
     ## Ponto dos itens bonus
@@ -68,7 +68,7 @@ while isJogando:
         else: b[2] += 1
 
     ## Exibe o vídeo das vidas disponíveis
-    for l in range(arena.getLifes()):
+    for l in range(arena.getVidas()):
         tela.blit(sprites, (210 - l*16, 254), area = (128, 16, 16, 16))
 
     ## Exibe o texto na tela escrito "PRONTO"

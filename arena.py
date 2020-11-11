@@ -29,6 +29,7 @@ class Arena(object):
     def __init__(self):
         pass
 
+    #retorna lista de atores
     def actors(self) -> list:
         return list(self._actors)
 
@@ -42,14 +43,16 @@ class Arena(object):
     def add(self, a):
         if a not in self._actors: self._actors.append(a)
 
+    #remove atores
     def remove(self, a):
         if a in self._actors: self._actors.remove(a)
 
+    #reduz uma vida
     def lose_life(self):
         self._lifes -= 1
 
 
-    
+    #mover todos
     def move_all(self):
         for a in self.actors():
             previous_pos = a.rect()

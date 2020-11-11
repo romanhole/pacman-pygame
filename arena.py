@@ -9,19 +9,19 @@ class Actor(object):
     def status(self, status: int):
         pass
 
-    def start(self):
+    def comecar(self):
         pass
 
-    def stop(self):
+    def parar(self):
         pass
 
-    def move(self):
+    def mover(self):
         pass
 
-    def collide(self, other):
+    def colidir(self, other):
         pass
 
-    def symbol(self):
+    def simbolo(self):
         pass
 
 class Arena(object):
@@ -29,39 +29,39 @@ class Arena(object):
     def __init__(self):
         pass
 
-    def actors(self) -> list:
-        return list(self._actors)
+    def atores(self) -> list:
+        return list(self._atores)
 
-    def size(self) -> tuple:
+    def tamanho(self) -> tuple:
         return (self._w, self._h)
 
     def getLifes(self) -> int:
         return self._lifes
 
 
-    def add(self, a):
-        if a not in self._actors: self._actors.append(a)
+    def adicionar(self, a):
+        if a not in self._atores: self._atores.append(a)
 
-    def remove(self, a):
-        if a in self._actors: self._actors.remove(a)
+    def remover(self, a):
+        if a in self._atores: self._atores.remover(a)
 
-    def lose_life(self):
+    def perderVida(self):
         self._lifes -= 1
 
 
     
-    def move_all(self):
-        for a in self.actors():
+    def moverTodos(self):
+        for a in self.atores():
             previous_pos = a.rect()
-            a.move()
+            a.mover()
             if a.rect() != previous_pos:
-                for other in reversed(self.actors()):
-                    if other is not a and self.check_collision(a, other):
-                        a.collide(other)
-                        other.collide(a)
+                for other in reversed(self.atores()):
+                    if other is not a and self.checarColisao(a, other):
+                        a.colidir(other)
+                        other.colidir(a)
 
     #verifica colisões
-    def check_collision(self, a1, a2) -> bool: 
+    def checarColisao(self, a1, a2) -> bool: 
         x1, y1, w1, h1 = a1.rect()
         x2, y2, w2, h2 = a2.rect()
         return (y2 < y1 + h1 and y1 < y2 + h2 and x2 < x1 + w1 and x1 < x2 + w2)

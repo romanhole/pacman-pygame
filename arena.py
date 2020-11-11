@@ -15,10 +15,10 @@ class Ator(object):
     def parar(self):
         pass
 
-    def mover(self):
+    def move(self):
         pass
 
-    def colidir(self, other):
+    def colidir(self, outro):
         pass
 
     def simbolo(self):
@@ -53,12 +53,12 @@ class Arena(object):
     def moverTodos(self):
         for a in self.atores():
             ultimaPosicao = a.rect()
-            a.mover()
+            a.move()
             if a.rect() != ultimaPosicao:
-                for other in reversed(self.atores()):
-                    if other is not a and self.checarColisao(a, other):
-                        a.colidir(other)
-                        other.colidir(a)
+                for outro in reversed(self.atores()):
+                    if outro is not a and self.checarColisao(a, outro):
+                        a.colidir(outro)
+                        outro.colidir(a)
 
     #verifica colisões
     def checarColisao(self, a1, a2) -> bool: 

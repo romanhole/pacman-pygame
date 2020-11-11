@@ -154,14 +154,14 @@ class Biscoito(Ator):
         return 166, 54
     
     ## colisão Biscoito
-    def collide(self, outroAtor):
+    def colidir(self, outroAtor):
         if isinstance(outroAtor, PacMan):
             x, y, w, h = outroAtor.rect()
             if (self._y == y + 6 and y == self._y - 6 and self._x == x + 6 and x == self._x - 6):
                 outroAtor.pontuacao += 10
-                self._arena.sound(2).parar()
+                self._arena.sound(2).stop()
                 self._arena.sound(2).play()
-                self._arena.remove(self)
+                self._arena.remover(self)
 
 
 class Poder(Ator):
@@ -189,7 +189,7 @@ class Poder(Ator):
             if (self._y == y + 4 and y == self._y - 4 and self._x == x + 4 and x == self._x - 4):
                 outroAtor.pontuacao += 50
                 self._arena.sound(6).play()
-                self._arena.remove(self)
+                self._arena.remover(self)
                 for a in self._arena.atores():
                     if isinstance(a, Fantasma) and a.getStatus() != 4 and a.getStatus() != 5:
                         a.status(2)          
@@ -277,7 +277,7 @@ class Fantasma(Ator):
         self._sprite = [128, 80]
 
     def move(self):
-        Arena_W, Arena_H = self._arena.size()
+        Arena_W, Arena_H = self._arena.tamanho()
         angles = ((0,0),(232,0),(0,232),(232,232))
         ## Controle dos limites da arena
         if self._x < self._velocidade - self.W: self._x = Arena_W - self._velocidade
@@ -447,7 +447,7 @@ class PacMan(Ator):
         self._next_dir = (-2, 0)
 
     def parar(self): # PacMan para
-        self._arena.sound(3).parar()
+        self._arena.sound(3).stop()
         self._dir = (0,0)
         self._next_dir = (0,0)
         self._sprite = (16, self._sprite[1])
@@ -487,13 +487,13 @@ class PacMan(Ator):
                 self.pontuacao += self._bonus[n]
             
     def move(self):
-        Arena_W, Arena_H = self._arena.size()
+        Arena_W, Arena_H = self._arena.tamanho()
         if self._status == 0:
             ## Controle dos limites da arena
             if self._x < 2 - self.W: self._x = Arena_W - 2
             elif self._x > Arena_W - 2: self._x = 2 - self.W
             ## Substituindo dir por next_dir se possível
-            if self._dir != self._next_dir and not self._arena.going_to_Parede(self, self._next_dir[0], self._next_dir[1]):
+            if self._dir != self._next_dir and not self._arena.indoParaParede(self, self._next_dir[0], self._next_dir[1]):
                 self._dir = self._next_dir
             self._x += self._dir[0]
             self._y += self._dir[1]

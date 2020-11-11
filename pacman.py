@@ -100,7 +100,7 @@ class Bonus(Ator):
     ## 1 -> comido por PacMan
     ## 2 -> todos os bônus já comidos, não visíveis
 
-        if status == 1: self._symbol = -1
+        if status == 1: self._simbolo = -1
         elif status == 0:
             if self._simbolo < 7: self._simbolo += 1
             elif self._simbolo == 7: status = 2
@@ -154,9 +154,9 @@ class Biscoito(Ator):
         return 166, 54
     
     ## colisão Biscoito
-    def collide(self, other):
-        if isinstance(other, PacMan):
-            x, y, w, h = other.rect()
+    def collide(self, outroAtor):
+        if isinstance(outroAtor, PacMan):
+            x, y, w, h = outroAtor.rect()
             if (self._y == y + 6 and y == self._y - 6 and self._x == x + 6 and x == self._x - 6):
                 outroAtor.pontuacao += 10
                 self._arena.sound(2).parar()
@@ -209,13 +209,13 @@ class Fantasma(Ator):
         self._arena.adicionar(self)
         self._behav = random.randint(0, 1)
         self._behav_count = random.randint(0, 50)
-        self._Portao = False # Quando True, o fantasma pode passar pelo portão
+        self._portao = False # Quando True, o fantasma pode passar pelo portão
 
     def getStatus(self) -> int:
         return self._status
 
     def getPortao(self) -> bool:
-        return self._Portao
+        return self._portao
 
     def status(self, status: int):
         ## STATUS:
@@ -246,7 +246,7 @@ class Fantasma(Ator):
 
     def normal(self): # O fantasma retorna à velocidade normal
         self._velocidade = 2
-        if self._y == 112 and 92 <= self._x <= 128: self._Portao = True # Se ele estiver dentro do recinto inicial, ele deve ser capaz de sair
+        if self._y == 112 and 92 <= self._x <= 128: self._portao = True # Se ele estiver dentro do recinto inicial, ele deve ser capaz de sair
         if (self._dir[0] != 0 and self._x % 2 == 0) or (self._dir[1] != 0 and self._y % 2 == 0):
             self._dir = [self._dir[0]*2, self._dir[1]*2]
         else:
@@ -255,7 +255,7 @@ class Fantasma(Ator):
             self._dir = [self._dir[0]*2, self._dir[1]*2]
         self._sprite = [0, 64 + self._color*16]
 
-    def comecar(self): # O fantasma para
+    def parar(self): # O fantasma para
         self._velocidade = 0
         self._dir = [0, 0]
 
@@ -267,7 +267,7 @@ class Fantasma(Ator):
 
     def comido(self): # O fantasma se torna os "olhinhos" e aumenta sua velocidade
         self._velocidade = 4
-        self._Portao = True
+        self._portao = True
         if (self._dir[0] != 0 and self._x % 4 == 0) or (self._dir[1] != 0 and self._y % 4 == 0):
             self._dir = [self._dir[0]*4, self._dir[1]*4]
         else:
@@ -298,16 +298,16 @@ class Fantasma(Ator):
         elif self._status in [2, 3]: self._dir = random.choice(dirs)
         else:
             ## Seleção de alvo (xt, yt)
-            if self._Portao and self._status != 4: # O fantasma sai do recinto inicial para entrar no jogo
+            if self._portao and self._status != 4: # O fantasma sai do recinto inicial para entrar no jogo
                 xt, yt = 108, 88
                 if self._x == xt and self._y == yt:
                     self.status(0)
-                    self._Portao = False
+                    self._portao = False
             elif self._status == 4: # O fantasma retorna ao recinto inicial quando comido por PacMan
                 xt,yt = 108, 112
                 if self._x == xt and self._y == yt:
                     self.status(0)
-                    self._Portao = True
+                    self._portao = True
             elif self._behav == 0: # Modo de dispersão (patrulha de canto)
                 xt,yt = angles[self._color]
                 if self._behav_count == FPS*7:
@@ -351,7 +351,7 @@ class Fantasma(Ator):
                 if self._color == 0: self.status(0)
                 else: self.comecar()
             if self._counter == 5*FPS + 90*self._color:
-                if self._color != 0: self._Portao = True
+                if self._color != 0: self._portao = True
             self._counter += 1
         ## Status 0
         elif self._status == 0 and self._counter == 3:
@@ -415,7 +415,7 @@ class PacMan(Ator):
         self.pontuacao_sprite = []
         self.bonus_sprite = []
         self._bonus = [100, 300, 500, 700, 1000, 2000, 3000, 5000] #valor do bonus
-        self._Portao = False
+        self._portao = False
 
     def direcao(self, next_dx:int, next_dy:int):
         self._next_dir = (next_dx, next_dy)
@@ -424,7 +424,7 @@ class PacMan(Ator):
         return self._status
 
     def getPortao(self) -> bool:
-        return self._Portao
+        return self._portao
 
     def status(self, status: int):
         ## STATUS:
@@ -470,9 +470,9 @@ class PacMan(Ator):
                     self._arena.sound(5).play()
                     ## Cálculo de pontos de bônus
                     num = 0 # Número de fantasmas já comidos
-                    for a in self._arena.actors():
+                    for a in self._arena.atores():
                         if isinstance(a, Fantasma) and a.getStatus() in [0,4]: num += 1
-                    if other.getStatus() == 3: num += 1
+                    if outroAtor.getStatus() == 3: num += 1
                     score = 100 * (2**(num + 1))
                     self.pontuacao_sprite.append([(x, y), num, 0])
                     self.pontuacao += score
